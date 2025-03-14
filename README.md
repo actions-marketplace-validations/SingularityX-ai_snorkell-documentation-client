@@ -1,9 +1,9 @@
 
-# Snorkell DocGen Client
+# Penify DocGen Client
 
 ## Description
 
-The "Snorkell DocGen Client" GitHub Action is designed to automate the creation of documentation pull requests for recent merges into the main branch. This action interacts with the Snorkell service to generate and commit documentation changes directly to your repository.
+The "Penify DocGen Client" GitHub Action is designed to automate the creation of documentation pull requests for recent merges into the main branch. This action interacts with the Snorkell service to generate and commit documentation changes directly to your repository.
 
 ## Usage
 
@@ -20,8 +20,8 @@ To use this action in your workflow, add the following step to your `.github/wor
 
 ### Inputs
 
-- `client_id`: Your client ID for Snorkell. (Required)
-- `api_key`: API Key for Snorkell. (Required)
+- `client_id`: Your client ID for Penify. (Required)
+- `api_key`: API Key for Penify. (Required)
 - `branch_name`: Base Branch for the PR. (Required)
 
 ## How it Works
