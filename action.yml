@@ -1,6 +1,6 @@
 name: 'Penify DocGen Workflow'
 description: 'Use this GitHub Action to create documentation PR of your recent main branch merge.'
-author: 'snorkell.ai'
+author: 'penify.dev'
 
 inputs:
   client_id:
