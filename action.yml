@@ -1,13 +1,13 @@
-name: 'Snorkell DocGen Client'
+name: 'Penify DocGen Workflow'
 description: 'Use this GitHub Action to create documentation PR of your recent main branch merge.'
 author: 'snorkell.ai'
 
 inputs:
   client_id:
-    description: 'Client ID for Snorkell'
+    description: 'Client ID for Penify'
     required: true
   api_key:
-    description: 'API Key for Snorkell'
+    description: 'API Key for Penify'
     required: true
   branch_name:
     description: 'Base Branch for the PR'
