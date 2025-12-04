@@ -3,14 +3,18 @@ import requests
 import asyncio
 import json
 import traceback
+from pprint import pprint
+
+base_url = f"https://production-gateway.snorkell.ai"
+# base_url = "https://8455-2401-4900-1f26-31a3-d13d-e5fe-ee8f-f94d.ngrok-free.app/api/v1/health"
 
 async def notify_error(message):
     message = f"GithubClient alert:\n {message}"
     print(message)
     other_vars = {
-        "GITHUB_REPOSITORY": os.getenv("GITHUB_REPOSITORY"),
+        "REPO_NAME": os.getenv("REPO_NAME"),
+        "ORG_NAME": os.getenv("ORG_NAME"),
         "BRANCH_NAME": os.getenv("BRANCH_NAME"),
-        "SNORKELL_CLIENT_ID": os.getenv("SNORKELL_CLIENT_ID"),
     }
     headers = {"Content-type": "application/json"}
     data = {
@@ -18,7 +22,7 @@ async def notify_error(message):
         "repo_details": other_vars,
     }
     print("Sending error notification to snorkell ", data)
-    url: str = "https://production-gateway.snorkell.ai/api/app/github/report/errors"
+    url: str = f"{base_url}/api/app/github/report/errors"
     response = requests.post(url, headers=headers, json=data, timeout=600)
     if response.status_code == 200:
         message = response.json()["message"]
@@ -31,7 +35,9 @@ async def notify_error(message):
 async def initiate_documentation_generation(
     headers: dict, data: dict
 ) -> bool:
-    url: str = "https://production-gateway.snorkell.ai/api/app/github/generate/documentation"
+    url: str = f"{base_url}/api/app/azDevops/generate/diff/doc"
+    print("Initiating documentation generation")
+    print("URL: ", url)
     response = requests.post(url, headers=headers, json=data, timeout=600)
     if response.status_code == 200:
         message = response.json()["message"]
@@ -47,7 +53,7 @@ async def initiate_documentation_generation(
 
 
 async def check_documentation_generation_status(headers, data):
-    url = "https://production-gateway.snorkell.ai/api/app/github/generate/documentation/status"
+    url = f"{base_url}/api/app/azDevops/status/diff/doc"
     count = 0
     while count < 360:
         response = requests.post(url, headers=headers, json=data, timeout=600)
@@ -77,12 +83,13 @@ async def check_documentation_generation_status(headers, data):
 
 async def main():
     required_env_vars = [
+        "PAT_TOKEN",
         "SNORKELL_API_KEY",
-        "SNORKELL_CLIENT_ID",
-        "GITHUB_REPOSITORY",
+        "REPO_NAME",
+        "ORG_NAME",
         "BRANCH_NAME",
         "GITHUB_SHA",
-        "COMMIT_MSG",
+        "COMMIT_MSG"
     ]
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     print("Validating the inputs")
@@ -90,22 +97,8 @@ async def main():
     if missing_vars:
         missing_keys = ', '.join(missing_vars)
         await notify_error(f"Missing required environment variables: {missing_keys}\n")
-        print("####################### Invalid credentials issue #############################")
-        print("Penify auto-heals itself when keys are not present.")
-        print("You just need to rerun the action")
-        print("If it still doesn't fix the issue, please follow the below steps:")
-        print("1. Copy the API key from the Snorkell dashboard - https://dashboard.penify.dev/snorkell-api-keys")
-        print("2. Then go to your repository Settings -> Secrets & Variables -> Actions -> New repository secret")
-        print("3. Create a new secret with the name SNORKELL_API_KEY")
-        print("4. Paste the API key in the value field")
-        print("5. Now create a new key with the name SNORKELL_CLIENT_ID")
-        print("6. Value for SNORKELL_CLIENT_ID is the installation id of the app.")
-        print("7. Visit this link - https://github.com/apps/penify-dev")
-        print("8. Click Install/Configure.")
-        print("9. You will get the installation id in the URL.")
-        print("10. Paste the installation id in the value field")
-        print("11. Rerun the action")
-        print("If the issue still persists, please reach out to us at founders@penify.dev")
+        print("################################################################################")
+        print("If the issue still persists, please reach out to us at support@penify.dev")
         print("We will immediately help you out.")
         print("################################################################################")
         raise ValueError(
@@ -126,17 +119,17 @@ async def main():
         "Content-Type": "application/json",
     }
     data = {
-        "installation_id": os.getenv(
-            "SNORKELL_CLIENT_ID"
-        ),  # Replace with your client ID
-        "full_repo_name": os.getenv(
-            "GITHUB_REPOSITORY"
-        ),  # Replace with your repository name
+        "api_token": os.getenv("PAT_TOKEN"),  # Replace with your PAT token
+        "git_repo": {
+            "repo_name": os.getenv("REPO_NAME"),  # Replace with your repository name
+            "org_name": os.getenv("ORG_NAME"),  # Replace with your organization name
+        },
         "base_branch": os.getenv("BRANCH_NAME"),  # Replace with your branch name
         "commit_sha": os.getenv("GITHUB_SHA"),  # Replace with your commit SHA
         "commit_message": os.getenv("COMMIT_MSG"),  # Replace with your commit message
     }
 
+    pprint(data)
     try:
         is_valid_request = await initiate_documentation_generation(headers, data)
         if not is_valid_request:
@@ -151,8 +144,6 @@ async def main():
         traceback.print_exc()
         if "Could not validate credentials" in traceback.format_exc():
             print("####################### Invalid credentials issue #############################")
-            print("Penify auto-heals itself when the credentials are invalid.")
-            print("You just need to rerun the action")
             print("If it still doesn't fix the issue, please follow the below steps:")
             print("1. Copy the API key from the Snorkell dashboard - https://dashboard.penify.dev/snorkell-api-keys")
             print("2. Then go to your repository Settings -> Secrets & Variables -> Actions -> New repository secret")

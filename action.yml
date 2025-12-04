@@ -1,15 +1,17 @@
-name: 'Snorkell DocGen Client'
+name: 'Penify DocGen Workflow'
 description: 'Use this GitHub Action to create documentation PR of your recent main branch merge.'
-author: 'snorkell.ai'
+author: 'penify.dev'
 
 inputs:
   client_id:
-    description: 'Client ID for Snorkell'
+    description: 'Client ID for Penify'
     required: true
   api_key:
-    description: 'API Key for Snorkell'
+    description: 'API Key for Penify'
     required: true
-
+  branch_name:
+    description: 'Base Branch for the PR'
+    required: true
 outputs: {}
 
 runs:
@@ -23,8 +25,8 @@ runs:
 
     - name: Download Script and Install Dependencies
       run: |
-        curl -o run_doc_gen.py https://raw.githubusercontent.com/SingularityX-ai/snorkell-documentation-client/v0.1.15-alpha/src/index.py
-        pip install requests requests
+        curl -o run_doc_gen.py https://raw.githubusercontent.com/SingularityX-ai/snorkell-documentation-client/v1.0.0/src/index.py
+        pip install requests requests asyncio
       shell: bash
 
     - name: Prepare Commit Message
@@ -40,12 +42,12 @@ runs:
         SNORKELL_CLIENT_ID: ${{ inputs.client_id }}
         SNORKELL_API_KEY: ${{ inputs.api_key }}
         GITHUB_REPOSITORY: ${{ github.repository }}
-        BRANCH_NAME: ${{ github.ref }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
         GITHUB_SHA: ${{ github.sha }}
         COMMIT_MSG: ${{ steps.prep.outputs.escaped_commit_msg }}
 
       run: |
-        python run_doc_gen.py
+        python -u run_doc_gen.py
          
 branding:
   icon: 'upload-cloud'
